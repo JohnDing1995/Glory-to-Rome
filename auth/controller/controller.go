@@ -12,24 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func connectDBWithResponse(w http.ResponseWriter) *gorm.DB {
-	db, err := utils.ConnectPostgreSQL()
-	if err != nil {
-		log.Fatalf("Unable to connect to the database. %v", err)
-		res := utils.GenerateResponse(false, err.Error(), "")
-		utils.Respond(w, res)
-	}
-	return db
-}
-
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user model.User
 	var res map[string]interface{}
-
 	vars := mux.Vars(r)
-	fmt.Println(vars)
-	db := connectDBWithResponse(w)
-	err := db.Where("id = ?", vars["id"]).First(&user).Error
+	user, err := getUserByID(vars["id"])
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			res = utils.GenerateResponse(false, "User not find", "")
@@ -52,10 +38,8 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, res)
 }
 
-func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
+func InsertOrUpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	var user model.User
 	var res map[string]interface{}
 
@@ -63,24 +47,34 @@ func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		log.Fatalf("Unable to decode the request body.  %v", err)
-	}
-	db, err := utils.ConnectPostgreSQL()
-	if err != nil {
-		log.Fatalf("Unable to connect to the database. %v", err)
 		res = utils.GenerateResponse(false, err.Error(), "")
 		utils.Respond(w, res)
 	}
-	result := db.Create(&user)
+	isAdd, err := addOrUpdateUser(user)
 	// format a response object
-	if result.Error != nil {
+	if err != nil {
 		log.Fatalf("Unable to insert to the database. %v", err)
 		res = utils.GenerateResponse(false, err.Error(), "")
 	} else {
-		res = utils.GenerateResponse(true, "New user added", user)
+		if isAdd {
+			// Added a new object
+			log.Println("Added new user")
+			res = utils.GenerateResponse(true, "New user added", "")
+		}
+		res = utils.GenerateResponse(true, "user updated", user)
 	}
 	utils.Respond(w, res)
 }
 
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	err := deleteUserByID(vars["id"])
+	if err != nil {
+		res := utils.GenerateResponse(false, fmt.Sprintf(err.Error()), "")
+		utils.Respond(w, res)
+	} else {
+		res := utils.GenerateResponse(true, fmt.Sprintf("User with id %s deleted", vars["id"]), "")
+		utils.Respond(w, res)
+	}
 
 }

@@ -12,7 +12,8 @@ var SetupServer = func(appPort string) {
 	var router = mux.NewRouter()
 	router.HandleFunc("/users", controller.GetAllUsersHandler).Methods("GET")
 	router.HandleFunc("/users/{id:[0-9]+}", controller.GetUserHandler).Methods("GET")
-	router.HandleFunc("/users", controller.InsertUserHandler).Methods("POST")
+	router.HandleFunc("/users/{id:[0-9]+}", controller.DeleteUserHandler).Methods("DELETE")
+	router.HandleFunc("/users", controller.InsertOrUpdateUserHandler).Methods("POST", "PUT")
 
 	err := http.ListenAndServe(":"+appPort, router)
 	if err != nil {
