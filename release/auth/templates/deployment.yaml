@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    run: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        run: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: gtr-auth
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        env:
+        - name: DB_ADDR
+          value: "postgresql.default.svc.cluster.local"
+        - name: DB_USER
+          value: "postgres"
+          # the password can be get with 
+          # kubectl get secret --namespace default postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
+          # I need to replace this environment virable with secret later.
+        - name: DB_PWD
+          value: "8zY4TJQnpY"
+        - name: DB_NAME
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: APP_PORT
+          value: "8080"
+        # volumeMounts:
+        # - name: {{ .Release.Name }}-config-volume
+        #   mountPath: /thesis-py-sensor-coordinator/thesispysensorcoordinator/config/config.yaml
+        #   subPath: config.yaml
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory:  {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+      # volumes:
+      #   - name: {{ .Release.Name }}-config-volume
+      #     configMap:
+      #       name: {{ .Release.Name }}-configmap
+      # imagePullSecrets:
+      #   - name: {{ .Values.imagePullSecrets }}
