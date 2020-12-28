@@ -13,7 +13,7 @@ import (
 )
 
 func MainHandler(w http.ResponseWriter, r *http.Request) {
-	res := utils.GenerateResponse(true, "This is the main page, välkommen!", "")
+	res := utils.GenerateResponse(true, "Välkommen!", "")
 	utils.Respond(w, res)
 }
 
