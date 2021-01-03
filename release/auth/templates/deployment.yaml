@@ -36,10 +36,6 @@ spec:
           value: "5432"
         - name: APP_PORT
           value: "8080"
-        # volumeMounts:
-        # - name: {{ .Release.Name }}-config-volume
-        #   mountPath: /thesis-py-sensor-coordinator/thesispysensorcoordinator/config/config.yaml
-        #   subPath: config.yaml
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory }}
@@ -47,9 +43,3 @@ spec:
           limits:
             memory:  {{ .Values.resources.limits.memory }}
             cpu: {{ .Values.resources.limits.cpu }}
-      # volumes:
-      #   - name: {{ .Release.Name }}-config-volume
-      #     configMap:
-      #       name: {{ .Release.Name }}-configmap
-      # imagePullSecrets:
-      #   - name: {{ .Values.imagePullSecrets }}

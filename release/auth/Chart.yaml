@@ -1,7 +1,7 @@
 apiVersion: v2
 name: gtr-auth
 
-description: A Helm chart for auth service
+description: A Helm chart for gtr auth service
 
 # A chart can be either an 'application' or a 'library' chart.
 #
