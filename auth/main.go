@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	var appPort = os.Getenv("appPort")
+	var appPort = os.Getenv("APP_PORT")
 	db, _ := utils.ConnectPostgreSQL()
 	// remove in production?
 	db.AutoMigrate(&model.User{})

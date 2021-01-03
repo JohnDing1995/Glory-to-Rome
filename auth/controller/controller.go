@@ -12,6 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
+func MainHandler(w http.ResponseWriter, r *http.Request) {
+	res := utils.GenerateResponse(true, "This is the main page, välkommen!", "")
+	utils.Respond(w, res)
+}
+
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	var res map[string]interface{}
 	vars := mux.Vars(r)
