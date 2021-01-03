@@ -10,8 +10,6 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-imagePullSecrets: "regcred"
-
 service:
   type: LoadBalancer
   port: 8080
