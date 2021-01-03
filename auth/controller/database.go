@@ -44,7 +44,7 @@ func deleteUserByID(id interface{}) (err error) {
 }
 
 func addOrUpdateUser(user model.User) (isAdd bool, err error) {
-	oldUser := user
+	newUser := user
 	db, err := utils.ConnectPostgreSQL()
 	if err != nil {
 		log.Fatalf("Unable to connect to the database. %v", err)
@@ -58,8 +58,42 @@ func addOrUpdateUser(user model.User) (isAdd bool, err error) {
 		}
 	}
 	// Record exist, update
-	user.Name = oldUser.Name
-	user.Email = oldUser.Email
+	user.Name = newUser.Name
+	user.Email = newUser.Email
 	db.Save(&user)
 	return isAdd, err
+}
+
+func addUser(user model.User) (err error) {
+	db, err := utils.ConnectPostgreSQL()
+	if err != nil {
+		log.Fatalf("Unable to connect to the database. %v", err)
+		return err
+	}
+	if err = db.Where("email = ?", user.Email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("User not find, add new user")
+			err = db.Create(&user).Error // create new record if no result
+			return nil
+		}
+		return err
+	}
+	log.Println("User exists")
+	return errors.New("User already exists")
+}
+
+func checkIfLoginUser(loginUser model.InputUser, foundUser *model.User) (err error, canLogin bool) {
+	db, err := utils.ConnectPostgreSQL()
+	if err != nil {
+		log.Fatalf("Unable to connect to the database. %v", err)
+		return err, false
+	}
+	var userInDB model.User
+	if err = db.Where("Email = ?", loginUser.Email).First(&userInDB).Error; err != nil {
+		log.Println("Unable to find user. %v", err)
+		return err, false
+	}
+	foundUser.Email = userInDB.Email
+	foundUser.Name = userInDB.Name
+	return err, userInDB.PasswordHash == utils.HashAndSalt(loginUser.Password)
 }

@@ -16,3 +16,10 @@ spec:
                 name: gtr-auth-service
                 port:
                   number: 8080
+          - path: /users
+            pathType: Prefix
+            backend:
+              service:
+                name: gtr-auth-service
+                port:
+                  number: 8080
