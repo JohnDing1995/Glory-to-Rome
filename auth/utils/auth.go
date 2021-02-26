@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"glory-to-rome/auth/model"
 	"log"
 	"time"
@@ -43,4 +44,19 @@ func CreateJWT(user model.User) (string, time.Time, error) {
 	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString(jwtKey)
 	return tokenString, expirationTime, err
+}
+
+// Validate the JWT token, return error if it failed
+func ValidateJWT(tokenString string) error {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		fmt.Printf("%v %v", claims.Email, claims.StandardClaims.ExpiresAt)
+		return nil
+	} else {
+		fmt.Println(err)
+		return err
+	}
 }

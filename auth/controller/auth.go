@@ -7,6 +7,8 @@ import (
 	"glory-to-rome/auth/utils"
 	"log"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,5 +104,23 @@ func SignOutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefeshHandler(w http.ResponseWriter, r *http.Request) {
-
+	c, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	tknStr := c.Value
+	err = utils.ValidateJWT(tknStr)
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 }
